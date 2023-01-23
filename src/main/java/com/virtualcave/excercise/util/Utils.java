@@ -1,7 +1,7 @@
 package com.virtualcave.excercise.util;
 
-import com.virtualcave.excercise.model.Rate;
-import com.virtualcave.excercise.model.dto.RateDto;
+import com.virtualcave.excercise.repository.model.Rate;
+import com.virtualcave.excercise.service.dto.RateDto;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
@@ -39,14 +39,14 @@ public class Utils {
         return port;
     }
 
-    public static String getCurrencyServerUrl() {
+    public static String getCurrencyServiceUrl() {
         return wiremockUrl;
     }
-    public static int getCurrencyServerPort() {
+    public static int getCurrencyServicePort() {
         return wiremockPort;
     }
 
-    public static String getCurrencyServerUrlAndPort() {
+    public static String getCurrencyServiceUrlAndPort() {
         return wiremockUrl + ":" + port;
     }
 

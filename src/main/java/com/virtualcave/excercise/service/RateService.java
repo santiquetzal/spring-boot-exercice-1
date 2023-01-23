@@ -1,24 +1,24 @@
 package com.virtualcave.excercise.service;
 
-import com.virtualcave.excercise.model.Rate;
-import com.virtualcave.excercise.model.dto.RateDto;
-import com.virtualcave.excercise.model.dto.RateWithDecimalPriceDTO;
+import com.virtualcave.excercise.service.dto.RateDto;
+import com.virtualcave.excercise.service.dto.UpdateDto;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface RateService {
 
-    Rate findById(@NotNull Integer id);
+    Optional<RateDto> findById(@NotNull Integer id);
 
     List<RateDto> findAll();
 
-    RateWithDecimalPriceDTO findByProductIdAndBrandIdAndStartDateAndEndDate(int productId, int brandId, LocalDate startDate, LocalDate endDate);
+    RateDto findByProductIdAndBrandIdAndStartDateAndEndDate(int productId, int brandId, LocalDate startDate, LocalDate endDate);
 
-    RateDto save(Rate rate);
+    RateDto save(RateDto rateDto);
 
-    Rate update(Rate rate);
+    RateDto update(UpdateDto updateDto);
 
     void delete(int id);
 }

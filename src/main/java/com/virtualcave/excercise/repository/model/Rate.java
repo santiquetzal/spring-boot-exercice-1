@@ -1,4 +1,4 @@
-package com.virtualcave.excercise.model;
+package com.virtualcave.excercise.repository.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;

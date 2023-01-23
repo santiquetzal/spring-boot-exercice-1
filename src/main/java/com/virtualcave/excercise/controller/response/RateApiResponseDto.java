@@ -1,15 +1,13 @@
-package com.virtualcave.excercise.model.dto;
+package com.virtualcave.excercise.controller.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class RateDto {
+public class RateApiResponseDto {
 
     private Integer id;
     private Integer brandId;
