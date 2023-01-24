@@ -1,0 +1,23 @@
+version: '3'
+services:
+  wiremock:
+    image: wiremock/wiremock:latest
+    command:
+      - --local-response-templating
+      - --max-template-cache-entries
+      - "0"
+      - --verbose
+    ports:
+      - "7070:8080"
+      - "7443:8443"
+    volumes:
+      - ./wiremock/__files:/home/wiremock/__files
+      - ./wiremock/mappings:/home/wiremock/mappings
+  postgreSQL:
+    image: postgres:14.1-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgre

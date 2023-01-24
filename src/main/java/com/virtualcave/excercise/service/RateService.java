@@ -6,15 +6,14 @@ import com.virtualcave.excercise.service.dto.UpdateDto;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface RateService {
 
-    Optional<RateDto> findById(@NotNull Integer id);
+    RateDto findById(@NotNull Integer id);
 
     List<RateDto> findAll();
 
-    RateDto findByProductIdAndBrandIdAndStartDateAndEndDate(int productId, int brandId, LocalDate startDate, LocalDate endDate);
+    List<RateDto> findByProductIdAndBrandIdAndStartDateAndEndDate(LocalDate date, int productId, int brandId);
 
     RateDto save(RateDto rateDto);
 

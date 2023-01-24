@@ -13,5 +13,6 @@ public interface RateRepository extends CrudRepository<Rate, Integer> {
     List<Rate> findAll();
 
     @NotNull
-    List<Rate> findByProductIdAndBrandIdAndStartDateAndEndDate(int productId, int brandId, LocalDate startDate, LocalDate endDate);
+    List<Rate> findByStartDateAfterAndEndDateBeforeAndProductIdAndBrandId(LocalDate date, LocalDate sameDate, int productId, int brandId);
+
 }

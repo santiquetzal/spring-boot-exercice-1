@@ -1,10 +1,10 @@
-package com.virtualcave.excercise.remote.dto;
+package com.virtualcave.excercise.service.dto;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@NoArgsConstructor
 public class CurrencyDto {
 
     private String symbol;

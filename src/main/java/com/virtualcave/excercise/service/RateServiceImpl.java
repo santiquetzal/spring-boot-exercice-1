@@ -1,12 +1,10 @@
 package com.virtualcave.excercise.service;
 
 import com.virtualcave.excercise.exception.RateNotFoundException;
-import com.virtualcave.excercise.remote.CurrencyService;
 import com.virtualcave.excercise.repository.RateRepository;
 import com.virtualcave.excercise.repository.model.Rate;
 import com.virtualcave.excercise.service.dto.RateDto;
 import com.virtualcave.excercise.service.dto.UpdateDto;
-import com.virtualcave.excercise.util.Utils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -16,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,38 +30,36 @@ public class RateServiceImpl implements RateService {
     public List<RateDto> findAll() {
         return rateRepository.findAll()
                 .stream()
-                .map(Utils::convertRateToRateDto)
+                .map(rate -> mapper.map(rate, RateDto.class))
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public Optional<RateDto> findById(@NotNull Integer id) {
-        Optional<Rate> rate =  rateRepository.findById(id);
-        return rate.flatMap(a -> Optional.ofNullable(mapper.map(a, RateDto.class)));
+    public RateDto findById(@NotNull Integer id) {
+        Rate rate =  rateRepository.findById(id)
+                .orElseThrow(() -> new RateNotFoundException("The requested rate has not been found."));
+        return mapper.map(rate, RateDto.class);
     }
 
     @Override
     @Transactional
-    public RateDto findByProductIdAndBrandIdAndStartDateAndEndDate(int productId, int brandId, LocalDate startDate, LocalDate endDate) {
+    public List<RateDto> findByProductIdAndBrandIdAndStartDateAndEndDate(LocalDate localDate, int productId, int brandId) {
 
-        List<Rate> rates = rateRepository.findByProductIdAndBrandIdAndStartDateAndEndDate(productId, brandId, startDate, endDate);
-        if (rates.size() != 1) { // TODO: Revisar
-            log.warn("Hay más de 1 rate controlaría el error. Pero ahora no tengo tiempo.");
-            // throw new ApplicationException("More han 1 rates found for product/brand/startDate/endDate");
+        List<Rate> rates = rateRepository.findByStartDateAfterAndEndDateBeforeAndProductIdAndBrandId(localDate, localDate, productId, brandId);
+
+        if (rates.isEmpty()) {
+            throw new RateNotFoundException("No se han encontrado entidades con los valores proporcionados");
         }
 
-        // TODO: Revisar
-
-        return mapper.map(rates.get(0), RateDto.class);
-//        return rateWithDecimalPriceDTO;
+        return rates.stream().map(rate -> mapper.map(rate, RateDto.class)).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public RateDto update(UpdateDto updateDto) {
         Rate rateInDb = rateRepository.findById(updateDto.getId())
-                .orElseThrow(() -> new RateNotFoundException("Update not found while trying to perform rate update."));
+                .orElseThrow(() -> new RateNotFoundException("The rate cannot be updated because it does not exist."));
 
         rateInDb.setPrice(updateDto.getPrice());
         Rate updatedRate = rateRepository.save(rateInDb);
@@ -74,6 +69,10 @@ public class RateServiceImpl implements RateService {
     @Override
     @Transactional
     public void delete(int id) {
+        if (!rateRepository.findById(id).isPresent()) {
+            throw new RateNotFoundException("The entity cannot be deleted because it has not been found.");
+        }
+
         rateRepository.deleteById(id);
     }
 

@@ -3,6 +3,7 @@ package com.virtualcave.excercise.controller.response;
 import com.virtualcave.excercise.service.dto.RateDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class RateWithFormatApiResponseDto {
 
     private Integer id;

@@ -4,11 +4,10 @@ import com.virtualcave.excercise.controller.request.RateApiRequestDto;
 import com.virtualcave.excercise.controller.request.UpdateRateApiRequestDto;
 import com.virtualcave.excercise.controller.response.RateApiResponseDto;
 import com.virtualcave.excercise.controller.response.RateWithFormatApiResponseDto;
-import com.virtualcave.excercise.exception.RateNotFoundException;
-import com.virtualcave.excercise.remote.CurrencyService;
-import com.virtualcave.excercise.remote.dto.CurrencyDto;
 import com.virtualcave.excercise.repository.RateRepository;
+import com.virtualcave.excercise.service.CurrencyService;
 import com.virtualcave.excercise.service.RateService;
+import com.virtualcave.excercise.service.dto.CurrencyDto;
 import com.virtualcave.excercise.service.dto.RateDto;
 import com.virtualcave.excercise.service.dto.UpdateDto;
 import lombok.AllArgsConstructor;
@@ -19,18 +18,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
 public class RateControllerImpl implements RateController {
 
     private final RateService rateService;
-    private final CurrencyService currencyService; // TODO: ¿Para hacer las peticiones remotas lo instacio así?
+    private final CurrencyService currencyService;
     private final RateRepository rateRepository;
 
     private ModelMapper mapper;
@@ -39,84 +39,70 @@ public class RateControllerImpl implements RateController {
     public ResponseEntity<RateApiResponseDto> create(@RequestBody final RateApiRequestDto createRateApiRequest) {
 
         RateDto rateDto = rateService.save(mapper.map(createRateApiRequest, RateDto.class));
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(mapper.map(rateDto, RateApiResponseDto.class));
     }
 
     @Override
-    public ResponseEntity<List<RateDto>> getAll() {
+    public ResponseEntity<List<RateApiResponseDto>> getAll() {
         // Ejemplo usando ResponseEntity
+        List<RateApiResponseDto> all = rateService.findAll()
+                .stream().map(rate -> mapper.map(rate, RateApiResponseDto.class))
+                .collect(Collectors.toList());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(rateService.findAll());
+                .body(all);
     }
 
     @Override
     public ResponseEntity<RateWithFormatApiResponseDto> getById(@PathVariable("id") int id) {
-        // Ejemplo usando ResponseEntity y un controlador de errores para permitir establecer
-        // los codigos de errores y respuestas en funcions de los errores generados
-        try {
 
-            // TODO: Revisar gestión de optional, comprobar si existe... y gestionar exceptions
-            // TODO: Servidor local
-            RateDto rateDto = rateService.findById(id).orElseThrow(() -> new RateNotFoundException("Rate not found"));
-
-            // TODO: 2: Recupero currency del servidor remoto
+            RateDto rateDto = rateService.findById(id);
             CurrencyDto currencyDto = currencyService.getCurrency(rateDto.getCurrencyCode());
+
             RateWithFormatApiResponseDto rateWithFormatApiResponseDto =
                     new RateWithFormatApiResponseDto(rateDto, currencyDto.getDecimals(), currencyDto.getSymbol());
 
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(rateWithFormatApiResponseDto);
-
-        } catch (RateNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Rate Not Found");
-        }
     }
 
-    // TODO
     @Override
-    public ResponseEntity<RateWithFormatApiResponseDto> getByProductIdAndBrandIdAndStartDateAndEndDate(
-            @RequestParam String startDate, @RequestParam String endDate,
-            @RequestParam int productId, @RequestParam int brandId) {
+    public ResponseEntity<List<RateWithFormatApiResponseDto>> getByProductIdAndBrandIdAndStartDateAndEndDate(
+            @RequestParam String date, @RequestParam int productId, @RequestParam int brandId) {
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        LocalDate localStartDate = LocalDate.parse(startDate, formatter);
-        LocalDate localEndDate = LocalDate.parse(endDate, formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(date, formatter);
 
-        // TODO: Servidor local
-        RateDto rateDto = rateService.findByProductIdAndBrandIdAndStartDateAndEndDate(productId, brandId, localStartDate, localEndDate);
+        List<RateDto> rateDtoList = rateService.findByProductIdAndBrandIdAndStartDateAndEndDate(localDate, productId, brandId);
 
-        // TODO: Copiado del otro método, intentar generalizarlo, es exactamente igual?
-        // TODO: 2: Recupero currency del servidor remoto
-        CurrencyDto currencyDto = currencyService.getCurrency(rateDto.getCurrencyCode());
-        RateWithFormatApiResponseDto rateWithFormatApiResponseDto =
-                new RateWithFormatApiResponseDto(rateDto, currencyDto.getDecimals(), currencyDto.getSymbol());
-
+        List<RateWithFormatApiResponseDto> result = new ArrayList<>();
+        for (RateDto rateDto : rateDtoList) {
+            CurrencyDto currencyDto = currencyService.getCurrency(rateDto.getCurrencyCode());
+            RateWithFormatApiResponseDto rateWithFormatApiResponseDto =
+                    new RateWithFormatApiResponseDto(rateDto, currencyDto.getDecimals(), currencyDto.getSymbol());
+            result.add(rateWithFormatApiResponseDto);
+        }
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(rateWithFormatApiResponseDto);
+                .body(result);
     }
 
     @Override
-    public RateApiResponseDto update(@RequestBody UpdateRateApiRequestDto updateRateApiRequestDto) {
-        // TODO: Revisar
-        // Ejemplo permitiendo que Spring detecte automáticamente el codigo del estado que tiene que devolver
-        // y no usando ResponseEntity (Es decir, sin el try / catch de control de excepcion)
-        // TODO: Control de null
-//        Rate byId = rateService.findById(updateRateApiRequestDto.getId());
+    public RateApiResponseDto update(@PathVariable("id") int id,
+            @RequestBody UpdateRateApiRequestDto updateRateApiRequestDto) {
+        UpdateDto updateDto = mapper.map(updateRateApiRequestDto, UpdateDto.class);
+        updateDto.setId(id);
+        RateDto update = rateService.update(updateDto);
 
-        //rateService.findById(updateRateApiRequestDto)
-//        mapper.map(updateRateApiRequestDto, RateDto.class);
-        RateDto update = rateService.update(mapper.map(updateRateApiRequestDto, UpdateDto.class));
         return mapper.map(update, RateApiResponseDto.class);
     }
 
     @Override
-    public void delete(int id) {
-        // Ejemplo sencillo sin ningún control
+    public void delete(@PathVariable("id") int id) {
         rateService.delete(id);
     }
 }

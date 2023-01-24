@@ -9,10 +9,9 @@ public class ModelMapperConfig {
 
     @Bean
     public ModelMapper modelMapper() {
-        ModelMapper modelMapper = new ModelMapper();
 
         // Sí necesito hacer alguna conversion personalizada añadirla aquí
 
-        return modelMapper;
+        return new ModelMapper();
     }
 }

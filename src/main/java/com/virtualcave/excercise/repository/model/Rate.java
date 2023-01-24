@@ -1,6 +1,5 @@
 package com.virtualcave.excercise.repository.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.hibernate.Hibernate;
 
@@ -15,6 +14,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Builder
 public class Rate {
 
     @Id
@@ -31,11 +31,9 @@ public class Rate {
     private Integer productId;
 
     @Column(name = "start_date")
-    @JsonFormat(pattern="dd-MM-yyyy")
     private LocalDate startDate;
 
     @Column(name = "end_date")
-    @JsonFormat(pattern="dd-MM-yyyy")
     private LocalDate endDate;
 
     @NotNull

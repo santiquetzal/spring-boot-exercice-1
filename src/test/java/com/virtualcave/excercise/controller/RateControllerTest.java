@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class RateControllerTest {
+class RateControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

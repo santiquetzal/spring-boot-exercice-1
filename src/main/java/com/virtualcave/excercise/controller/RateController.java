@@ -4,7 +4,6 @@ import com.virtualcave.excercise.controller.request.RateApiRequestDto;
 import com.virtualcave.excercise.controller.request.UpdateRateApiRequestDto;
 import com.virtualcave.excercise.controller.response.RateApiResponseDto;
 import com.virtualcave.excercise.controller.response.RateWithFormatApiResponseDto;
-import com.virtualcave.excercise.service.dto.RateDto;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,17 +23,16 @@ public interface RateController {
 
     @Operation(description = "Retrieves all existing rates")
     @GetMapping
-    ResponseEntity<List<RateDto>> getAll();
+    ResponseEntity<List<RateApiResponseDto>> getAll();
 
-    @Operation(description = "Retrieves a rate by date, product and brand")
-    @GetMapping("/find")
-    ResponseEntity<RateWithFormatApiResponseDto> getByProductIdAndBrandIdAndStartDateAndEndDate(
-            @RequestParam String startDate, @RequestParam String endDate,
-            @RequestParam int productId, @RequestParam int brandId);
+    @Operation(description = "Retrieves a rate between date, product and brand")
+    @GetMapping("/search")
+    ResponseEntity<List<RateWithFormatApiResponseDto>> getByProductIdAndBrandIdAndStartDateAndEndDate(
+            @RequestParam String date, @RequestParam int productId, @RequestParam int brandId);
 
     @Operation(description = "Updates a rate")
-    @PutMapping
-    RateApiResponseDto update(@RequestBody UpdateRateApiRequestDto updateRateApiRequestDto);
+    @PatchMapping("/{id}")
+    RateApiResponseDto update(@RequestParam int id, @RequestBody UpdateRateApiRequestDto updateRateApiRequestDto);
 
     @Operation(description = "Deletes a rate")
     @DeleteMapping("/{id}")
